@@ -80,13 +80,13 @@ def draw_squares(nodeId, weight, xstart):
     elif row==8:
         label = "60-80mg for"
     elif row==7: pass
-    print("newstring hjc vjc fontsize 3")
+    print("newstring hjc vjc fontsize 5")
     print(" font Times-Roman x %s y %s : %s"%( x_blc+block_width*.5,y_blc+block_height*.75,label))
     print("")
-    print("newstring hjc vjc fontsize 3")
+    print("newstring hjc vjc fontsize 5")
     print(" font Times-Roman x %s y %s : %s"%( x_blc+block_width*.5,y_blc+block_height*.5,duration))
     print("")
-    print("newstring hjc vjc fontsize 3")
+    print("newstring hjc vjc fontsize 5")
     print(" font Times-Roman x %s y %s : (%.3f)"%( x_blc+block_width*.5,y_blc+block_height*.25, weight))
     print("")
 
@@ -182,15 +182,23 @@ def draw_arrows(n1,n2, weight, xstart):
         print("    %s %s %s %s %s %s %s %s %s %s %s %s %s %s"%(x_src,y_src-thickness*.25,xp1,yp1,xp2,yp2+2,x_dest,y_dest+thickness*.55,x_dest,y_dest+thickness*.5,x_dest,y_dest+thickness*.35,x_dest,y_dest+thickness*.3))
         print("newline rarrow linethickness .25 asize %s %s pts %s %s %s %s"%(4,thickness+1,x_dest,y_dest+thickness*.3,x_dest,y_dest))
 
-def draw_legend():
+def draw_legend(xstart):
     # draw color grid
-    xblc = 0
-    yblc = 0
-    leg_block_width = block_width * 3
+    hbw = block_width*.5
+    xblc = xstart+block_width
+    yblc = 350
+    leg_block_width = block_width * 4
     leg_block_height = block_height
-    lwidth = 3
+    lwidth = 2
+    bb = yblc - block_height - 7.5
+    # box in the legend
     print("newline poly linethickness 1 color 0 0 0 pfill -1 pts")
-    print("    %s %s %s %s %s %s %s %s"%(xblc-lwidth*.25,yblc-lwidth*.25,xblc+leg_block_width+lwidth*1.25,yblc-lwidth*.25,xblc+leg_block_width+lwidth*1.25,leg_block_height+lwidth*.25,xblc-lwidth*.25,leg_block_height+lwidth*.25))
+    print("    %s %s %s %s %s %s %s %s"%(xblc-hbw,bb,xblc+leg_block_width+hbw,bb,xblc+leg_block_width+hbw,bb+leg_block_height*3.5,xblc-hbw,bb+leg_block_height*3.5))
+    print("")
+    # box in the gradient colors
+    print("newline poly linethickness 1 color 0 0 0 pfill -1 pts")
+    #print("    %s %s %s %s %s %s %s %s"%(xblc-lwidth*.25,yblc-lwidth*.25,xblc+leg_block_width+lwidth*1.25,yblc-lwidth*.25,xblc+leg_block_width+lwidth*1.25,leg_block_height+lwidth*.25,xblc-lwidth*.25,leg_block_height+lwidth*.25))
+    print("    %s %s %s %s %s %s %s %s"%(xblc-.5,yblc-.5,xblc+leg_block_width+lwidth+.5,yblc-.5,xblc+leg_block_width+lwidth+.5,yblc+leg_block_height+.5,xblc-.5,yblc+leg_block_height+.5))
     # draw_scale
     print("newstring hjc vjc fontsize 5")
     print(" font Times-Roman x %s y %s : %s"%( xblc,yblc-3,"0.0"))
@@ -202,9 +210,9 @@ def draw_legend():
     print(" font Times-Roman x %s y %s : %s"%( xblc+leg_block_width,yblc-3,"1.0"))
     print("")
     # draw gradient
-    weights = range(0,21)
+    weights = range(0,41)
     for i in weights:
-        h, s, l = 0.15029761904761904, 1.00, .3 + .7*(1.-i/20.)
+        h, s, l = 0.15029761904761904, 1.00, .3 + .7*(1.-i/40.)
         r, g, b = colorsys.hls_to_rgb(h,l,s)
         x_blc = lwidth*i+xblc
         y_blc = yblc
@@ -218,9 +226,9 @@ def draw_legend():
         print("    %s %s %s %s %s %s %s %s"%(x_blc,y_blc,x_brc,y_brc,x_trc,y_trc,x_tlc,y_tlc))
         print("")
     # draw example lines
-    line_start = xblc + leg_block_width*2
-    line_y = yblc + leg_block_height*.5
-    line_width = 2
+    line_start = xblc #+ leg_block_width*2
+    line_y = 350-block_height #yblc + leg_block_height*.5
+    line_width = 1
     # draw_scale
     ticks = 75
     print("newstring hjc vjc fontsize 5")
@@ -291,37 +299,20 @@ ra = random.random
 #    t1,G1 = load_data(f1)
 #    t2,G2 = load_data(f2)
 def main():
+    GRAPHSPACE=30
     t1 = "Test G1"
     G1 = gen_data()
     t2 = "Test G2"
     G2 = gen_data()
+    xstart = 25
+    end = xstart + GRAPHSPACE + block_space*8+10
     print("newgraph")
-    print("xaxis min 0 max 250 nodraw")
-    print("yaxis min 0 max 150 nodraw")
+    print("xaxis min 0 max 110 nodraw")
+    print("yaxis min 5 max 105 nodraw")
     print("")
-    GRAPHSPACE=30
-    xstart = 5
     draw_graph(t1,G1,xstart)
 
-    #for i in range(1,24):
-    #    draw_squares(i,ra(),xstart)
-    #arrows = {1:[2,3,4,5],2:[6],3:[6],4:[6],5:[6],6:[8,9,10,11],7:[2,3,4,5],8:[12,7],9:[12,7],10:[12,7],11:[12,7]}
-    #for i in arrows:
-    #    for j in arrows[i]:
-    #        draw_arrows(i,j,ra(),xstart)
-    
-
-    # draw square and set title
-    #offset = 10
-    #topper = 20
-    #print("newline poly pfill -1 linethickness 1.0 pts")
-    #print("    %s %s %s %s %s %s %s %s"%(xstart-offset,5+row_space-offset,xstart+block_space*3+block_width+offset,5+row_space-offset,xstart+block_space*3+block_width+offset,5-offset+row_space*8+block_height+offset+topper,xstart-offset,5-offset+row_space*8+block_height+offset+topper))
-    #print("")
-    #print("newstring hjc vjc fontsize 15")
-    #print(" font Times-Roman x %s y %s : %s"%( (xstart+xstart+block_space*3+block_width)/2.,5-offset+row_space*8+block_height+offset+topper-6,"VISN 2"))
-    #print("")
-
-    xstart = 5 + GRAPHSPACE + block_space*4
+    xstart = xstart + GRAPHSPACE + block_space*4
     draw_graph(t2,G2,xstart)
     #for i in range(1,24):
     #    draw_squares(i,ra(),xstart)
@@ -338,7 +329,7 @@ def main():
     #print(" font Times-Roman x %s y %s : %s"%( (xstart+xstart+block_space*3+block_width)/2.,5-offset+row_space*8+block_height+offset+topper-6,"VISN 9"))
     #print("")
 
-    draw_legend()
+    draw_legend(xstart)
 
 if __name__=="__main__":
     #f1 = sys.argv[1]
