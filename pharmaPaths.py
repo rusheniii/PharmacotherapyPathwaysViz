@@ -333,9 +333,7 @@ def main(f1,f2):
     draw_legend(xstart)
 
 if __name__=="__main__":
-    print(sys.argv)
     if len(sys.argv) == 3:
-        print("HERE")
         f1 = sys.argv[1]
         f2 = sys.argv[2]
         main(f1,f2)
