@@ -10,4 +10,4 @@ I am depicting the prescription of antidepressants using a graph. We call this a
 ## Running the Code
 Using Python >= 2.7 type `make` from the current working directory.
 
-![Sample Visualization](https://raw.githubusercontent.com/rusheniii/PharmacotherapyPathwaysViz/master/sample_graph.eps)
+![Sample Visualization](https://raw.githubusercontent.com/rusheniii/PharmacotherapyPathwaysViz/master/sample_graph.svg)
