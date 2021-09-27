@@ -14,7 +14,8 @@ The program can also be invoked directly from the command line.
 
 `python pharmaPaths.py <graph1> <graph2>`
 
-`<graph1>` is a weighted directed graph with a title on the first line and delimited by space
-`<graph2>` is a weighted directed graph with a title on the first line and delimited by space
+`<graph1>` is a weighted directed graph with a title on the first line and delimited by comma. See examples for details
+
+`<graph2>` is a weighted directed graph with a title on the first line and delimited by comma. See examples for details
 
 ![Sample Visualization](https://raw.githubusercontent.com/rusheniii/PharmacotherapyPathwaysViz/master/sample_graph.svg)

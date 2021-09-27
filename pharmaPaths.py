@@ -295,15 +295,16 @@ def gen_data():
 
 
 ra = random.random
-#def main(f1,f2):
-#    t1,G1 = load_data(f1)
-#    t2,G2 = load_data(f2)
-def main():
+def main(f1,f2):
+    if not (f1 is None):
+        t1,G1 = load_data(f1)
+        t2,G2 = load_data(f2)
+    else:
+        t1 = "Test G1"
+        G1 = gen_data()
+        t2 = "Test G2"
+        G2 = gen_data()
     GRAPHSPACE=30
-    t1 = "Test G1"
-    G1 = gen_data()
-    t2 = "Test G2"
-    G2 = gen_data()
     xstart = 25
     end = xstart + GRAPHSPACE + block_space*8+10
     print("newgraph")
@@ -332,7 +333,10 @@ def main():
     draw_legend(xstart)
 
 if __name__=="__main__":
-    #f1 = sys.argv[1]
-    #f2 = sys.argv[2]
-    #main(f1,f2)
-    main()
+    print(sys.argv)
+    if len(sys.argv) == 3:
+        print("HERE")
+        f1 = sys.argv[1]
+        f2 = sys.argv[2]
+        main(f1,f2)
+    else: main(None,None)
