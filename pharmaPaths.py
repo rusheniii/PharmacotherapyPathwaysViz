@@ -35,7 +35,8 @@ def get_corners(nodeId,xstart):
 
 def draw_squares(nodeId, weight, xstart):
     #h, s, l = 0.15029761904761904, 1.00, .4 + .6*(1.-weight)
-    h, s, l = 0.15029761904761904, 1.00, .3 + .7*(1.-weight)
+    global MAXEND
+    h, s, l = 0.15029761904761904, 1.00, .5 + .5*(1.-weight/MAXEND)
     r, g, b = colorsys.hls_to_rgb(h,l,s)
     row = placement[nodeId]
     order = ordering[row].index(nodeId)
@@ -93,8 +94,8 @@ def draw_squares(nodeId, weight, xstart):
 from math import log2
 def draw_arrows(n1,n2, weight, xstart):
     # draw a triangle and a line to make an arrow
-    MIN_WIDTH= .25
-    MAX_WIDTH = 7.5
+    MIN_WIDTH= .25 #*8
+    MAX_WIDTH = 7.5*2
     thickness = MIN_WIDTH + (MAX_WIDTH - MIN_WIDTH)*weight
     src_row = placement[n1]
     dest_row = placement[n2]
@@ -111,15 +112,22 @@ def draw_arrows(n1,n2, weight, xstart):
 
     height = abs(y_dest - y_src)
     width = abs(x_dest - x_src)
-    if width <= block_space*.75: 
-        width = max(width*.25,1)
-        height = max(height*.25,1)
-    elif width > block_space*2: 
-        width = max(width*.25,1)
-        height = max(height*.5,1)
-    else:
-        width = width*.75
-        height = height*.75
+    #if width <= block_space*.75: 
+    #    # FIX: width = max(width*.25,1)
+    #    width = max(width*.25,1)
+    #    height = max(height*.25,1)
+    #    #if weight < .05: 
+    #    #    width = width/2.
+    #    #    height = height/2.
+    #elif width > block_space*2: 
+    #    width = max(width*.25,1)
+    #    height = max(height*.5,1)
+    #    #if weight < .05: 
+    #    #    width = width*5.
+    #    #    height = height*5.
+    #else:
+    #    width = width*.75
+    #    height = height*.75
     if src_row %2 ==0 and src_row<dest_row: # going from even to odd upward (eou) so curve inward
         x_src = x_src - block_width*.25
         x_dest = x_dest
@@ -159,6 +167,9 @@ def draw_arrows(n1,n2, weight, xstart):
             yp1 = y_src + log2(width) # special
             xp2 = x_dest + log2(height) #*.25
             yp2 = y_dest - log2(width) # * .25
+            if abs(x_dest - x_src) >=block_space*2:
+                yp2-=5
+                xp2+=5
     elif src_row %2==1 and src_row >= dest_row: # odd to even downward (oed)
         x_dest = x_dest + block_width*.25
         if x_dest < x_src: # curve left
@@ -174,13 +185,23 @@ def draw_arrows(n1,n2, weight, xstart):
 
     #print("newline poly pcfill .0 .0 .0 pts")
     #print("    %s %s %s %s %s %s"%(x_dest,y_dest,x_dest+thickness+2,y_dest-1.5,x_dest-thickness-2,y_dest-1.5))
-    print("newline bezier linethickness %s asize %s %s pts"%(thickness, 2,thickness+1))
+    print("newline bezier linethickness %s asize %s %s pts"%(thickness, thickness,thickness+1))
     if src_row<dest_row:
-        print("    %s %s %s %s %s %s %s %s %s %s %s %s %s %s"%(x_src,y_src+thickness*.25,xp1,yp1,xp2,yp2-thickness,x_dest,y_dest-thickness*.55,x_dest,y_dest-thickness*.5,x_dest,y_dest-thickness*.35,x_dest,y_dest-thickness*.3))
-        print("newline rarrow linethickness .25 asize %s %s pts %s %s %s %s"%(4,thickness+1,x_dest,y_dest-thickness*.3,x_dest,y_dest))
+        toffset = min(thickness,5)
+        midy = (y_src+y_dest)/2
+        midx = (x_src+x_dest)/2
+        _34y = (y_src+midy)/2.
+        #print("    %s %s %s %s %s %s %s %s %s %s %s %s %s %s"%(x_src,y_src+toffset*.25,xp1,yp1,xp2,yp2-toffset,x_dest,y_dest-toffset*.55,x_dest,y_dest-toffset*.5,x_dest,y_dest-toffset*.35,x_dest,y_dest-toffset*.3))
+        print("    %s %s %s %s %s %s %s %s"%(x_src,y_src+toffset*.25,midx,midy,x_dest,midy,x_dest,y_dest-toffset*.5))
+        print("newline rarrow linethickness .25 asize %s %s pts %s %s %s %s"%(4,thickness+1,x_dest,y_dest-toffset*.5,x_dest,y_dest))
     elif src_row>dest_row:
-        print("    %s %s %s %s %s %s %s %s %s %s %s %s %s %s"%(x_src,y_src-thickness*.25,xp1,yp1,xp2,yp2+2,x_dest,y_dest+thickness*.55,x_dest,y_dest+thickness*.5,x_dest,y_dest+thickness*.35,x_dest,y_dest+thickness*.3))
-        print("newline rarrow linethickness .25 asize %s %s pts %s %s %s %s"%(4,thickness+1,x_dest,y_dest+thickness*.3,x_dest,y_dest))
+        toffset = min(thickness,5)
+        midy = (y_src+y_dest)/2
+        _34y = (y_src+midy)/2.
+        midx = (x_src+x_dest)/2
+        print("    %s %s %s %s %s %s %s %s"%(x_src,y_src-toffset*.25,midx,midy,x_dest,midy,x_dest,y_dest+toffset*.5))
+        #print("    %s %s %s %s %s %s %s %s %s %s %s %s %s %s"%(x_src,y_src-thickness*.25,xp1,yp1,xp2,yp2+2,x_dest,y_dest+thickness*.55,x_dest,y_dest+thickness*.5,x_dest,y_dest+thickness*.35,x_dest,y_dest+thickness*.3))
+        print("newline rarrow linethickness .25 asize %s %s pts %s %s %s %s"%(4,thickness+1,x_dest,y_dest+toffset*.5,x_dest,y_dest))
 
 def draw_legend(xstart):
     # draw color grid
@@ -200,19 +221,21 @@ def draw_legend(xstart):
     #print("    %s %s %s %s %s %s %s %s"%(xblc-lwidth*.25,yblc-lwidth*.25,xblc+leg_block_width+lwidth*1.25,yblc-lwidth*.25,xblc+leg_block_width+lwidth*1.25,leg_block_height+lwidth*.25,xblc-lwidth*.25,leg_block_height+lwidth*.25))
     print("    %s %s %s %s %s %s %s %s"%(xblc-.5,yblc-.5,xblc+leg_block_width+lwidth+.5,yblc-.5,xblc+leg_block_width+lwidth+.5,yblc+leg_block_height+.5,xblc-.5,yblc+leg_block_height+.5))
     # draw_scale
+    GRAD_SCALE = "0."+str(int(round(MAXEND*10)))
+    HALF_GRAD_SCALE = str(round(MAXEND*10)/20)
     print("newstring hjc vjc fontsize 5")
     print(" font Times-Roman x %s y %s : %s"%( xblc,yblc-3,"0.0"))
     print("")
     print("newstring hjc vjc fontsize 5")
-    print(" font Times-Roman x %s y %s : %s"%( xblc+leg_block_width*.5,yblc-3,"0.5"))
+    print(" font Times-Roman x %s y %s : %s"%( xblc+leg_block_width*.5,yblc-3,HALF_GRAD_SCALE))
     print("")
     print("newstring hjc vjc fontsize 5")
-    print(" font Times-Roman x %s y %s : %s"%( xblc+leg_block_width,yblc-3,"1.0"))
+    print(" font Times-Roman x %s y %s : %s"%( xblc+leg_block_width,yblc-3,GRAD_SCALE))
     print("")
     # draw gradient
     weights = range(0,41)
     for i in weights:
-        h, s, l = 0.15029761904761904, 1.00, .3 + .7*(1.-i/40.)
+        h, s, l = 0.15029761904761904, 1.00, .5 + .5*(1.-i/40.)
         r, g, b = colorsys.hls_to_rgb(h,l,s)
         x_blc = lwidth*i+xblc
         y_blc = yblc
@@ -232,17 +255,18 @@ def draw_legend(xstart):
     # draw_scale
     ticks = 75
     print("newstring hjc vjc fontsize 5")
-    print(" font Times-Roman x %s y %s : %s"%( line_start,line_y-3,".6"))
+    print(" font Times-Roman x %s y %s : %s"%( line_start,line_y-5,".6"))
     print("")
     print("newstring hjc vjc fontsize 5")
-    print(" font Times-Roman x %s y %s : %s"%( line_start+ticks*line_width*.5,line_y-3,"0.3"))
+    print(" font Times-Roman x %s y %s : %s"%( line_start+ticks*line_width*.5,line_y-5,"0.3"))
     print("")
     print("newstring hjc vjc fontsize 5")
-    print(" font Times-Roman x %s y %s : %s"%( line_start+ticks*line_width,line_y-3,"0.0"))
+    print(" font Times-Roman x %s y %s : %s"%( line_start+ticks*line_width,line_y-5,"0.0"))
     print("")
+    # arrow_legend
     thicknesses = range(ticks,1,-1)
     for i in thicknesses:
-        print("newline linethickness %s pts %s %s %s %s"%(i/10.,line_start,line_y,line_start+line_width,line_y))
+        print("newline linethickness %s pts %s %s %s %s"%((2*i)/10.,line_start,line_y,line_start+line_width,line_y))
         print("")
         line_start = line_start+line_width
     
@@ -251,8 +275,10 @@ def write_text():
     pass
 
 
+MAXEND =0
 from collections import Counter
 def load_data(filename):
+    global MAXWEIGHT,MAXEND
     G = Counter()
     with open(filename) as f:
         for i,line in enumerate(f.readlines()):
@@ -260,6 +286,8 @@ def load_data(filename):
             else:
                 src,dest,weight = line.strip().split(",")
                 G[(int(src),int(dest))]=float(weight)
+                if int(dest)==-1: MAXEND=max(MAXEND,float(weight))
+                else: MAXWEIGHT=max(MAXWEIGHT,float(weight))
     return header,G
 
 def draw_graph(t,G,xstart):
@@ -283,6 +311,8 @@ def draw_graph(t,G,xstart):
     print(" font Times-Roman x %s y %s : %s"%( (xstart+xstart+block_space*3+block_width)/2.,5-offset+row_space*8+block_height+offset+topper-6,t))
     print("")
 
+
+MAXWEIGHT=0
 def gen_data():
     G = {}
     for i in range(1,24):
@@ -293,17 +323,19 @@ def gen_data():
             G[(i,j)]=ra()
     return G
 
+def scale(G):
+    global MAXWEIGHT
+    for k in G:
+        if k[-1]==-1: continue
+        G[k] = G[k]/MAXWEIGHT
 
 ra = random.random
-#def main(f1,f2):
-#    t1,G1 = load_data(f1)
-#    t2,G2 = load_data(f2)
-def main():
+def main(f1,f2):
+    t1,G1 = load_data(f1)
+    t2,G2 = load_data(f2)
+    scale(G1)
+    scale(G2)
     GRAPHSPACE=30
-    t1 = "Test G1"
-    G1 = gen_data()
-    t2 = "Test G2"
-    G2 = gen_data()
     xstart = 25
     end = xstart + GRAPHSPACE + block_space*8+10
     print("newgraph")
@@ -332,7 +364,6 @@ def main():
     draw_legend(xstart)
 
 if __name__=="__main__":
-    #f1 = sys.argv[1]
-    #f2 = sys.argv[2]
-    #main(f1,f2)
-    main()
+    f1 = sys.argv[1]
+    f2 = sys.argv[2]
+    main(f1,f2)
