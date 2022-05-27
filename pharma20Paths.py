@@ -14,6 +14,10 @@ block_width = 20
 block_space = 30
 block_height = 10
 row_space=35
+MAXEND=0.7
+MAXWEIGHT=0.7
+MAXGHEIGHT=0.0
+MINGHEIGHT=float("inf")
 
 def get_corners(nodeId,xstart):
     row = placement[nodeId]
@@ -21,10 +25,13 @@ def get_corners(nodeId,xstart):
     x_blc = block_space*order+xstart
     if row==1:
         x_blc = x_blc+block_space*1.5
+        y_blc = 3*row_space+5
     elif row%2==1:
         x_blc = 2*block_space*order+xstart
         x_blc = x_blc+block_space*.5
-    y_blc = row*row_space+5
+        y_blc = row*row_space+5
+    else:
+        y_blc = row*row_space+5
     x_brc = x_blc+block_width
     y_brc = y_blc
     x_trc = x_brc
@@ -35,7 +42,7 @@ def get_corners(nodeId,xstart):
 
 def draw_squares(nodeId, weight, xstart):
     #h, s, l = 0.15029761904761904, 1.00, .4 + .6*(1.-weight)
-    global MAXEND
+    global MAXEND,MAXGHEIGHT,MINGHEIGHT
     h, s, l = 0.15029761904761904, 1.00, .5 + .5*(1.-weight/MAXEND)
     r, g, b = colorsys.hls_to_rgb(h,l,s)
     row = placement[nodeId]
@@ -43,6 +50,8 @@ def draw_squares(nodeId, weight, xstart):
     (x_blc,y_blc),(x_brc,y_brc),(x_trc,y_trc),(x_tlc,y_tlc) = get_corners(nodeId, xstart)
     print("newline poly pcfill %s %s %s linethickness 0.25 pts"%(r,g,b))
     print("    %s %s %s %s %s %s %s %s"%(x_blc,y_blc,x_brc,y_brc,x_trc,y_trc,x_tlc,y_tlc))
+    MAXGHEIGHT=max(MAXGHEIGHT,y_tlc)
+    MINGHEIGHT=min(MINGHEIGHT,y_blc)
     print("")
     label = str(nodeId)
     duration = "0"
@@ -53,7 +62,7 @@ def draw_squares(nodeId, weight, xstart):
     duration += " months"
     if row==1: 
         label = "Start Drug"
-        duration = "at <20 mg"
+        duration = "at 20-39 mg"
     elif row==2:
         label = "<20mg for"
     elif row==3:
@@ -205,12 +214,13 @@ def draw_arrows(n1,n2, weight, xstart):
 
 def draw_legend(xstart):
     # draw color grid
+    topper = 20
     hbw = block_width*.5
     xblc = xstart+block_width
-    yblc = 350
     leg_block_width = block_width * 4
     leg_block_height = block_height
     lwidth = 2
+    yblc = 30+row_space*8+block_height+topper # leg_block_height+lwidth*.25 # MAXGHEIGHT+60
     bb = yblc - block_height - 7.5
     # box in the legend
     print("newline poly linethickness 1 color 0 0 0 pfill -1 pts")
@@ -224,18 +234,18 @@ def draw_legend(xstart):
     GRAD_SCALE = "0."+str(int(round(MAXEND*10)))
     HALF_GRAD_SCALE = str(round(MAXEND*10)/20)
     print("newstring hjc vjc fontsize 5")
-    print(" font Times-Roman x %s y %s : %s"%( xblc,yblc-3,"0.0"))
+    print(" font Times-Roman x %s y %s : %s"%( xblc,yblc-3,GRAD_SCALE))
     print("")
     print("newstring hjc vjc fontsize 5")
     print(" font Times-Roman x %s y %s : %s"%( xblc+leg_block_width*.5,yblc-3,HALF_GRAD_SCALE))
     print("")
     print("newstring hjc vjc fontsize 5")
-    print(" font Times-Roman x %s y %s : %s"%( xblc+leg_block_width,yblc-3,GRAD_SCALE))
+    print(" font Times-Roman x %s y %s : %s"%( xblc+leg_block_width,yblc-3,"0.0"))
     print("")
     # draw gradient
     weights = range(0,41)
     for i in weights:
-        h, s, l = 0.15029761904761904, 1.00, .5 + .5*(1.-i/40.)
+        h, s, l = 0.15029761904761904, 1.00, .5 + .5*(i/40.)
         r, g, b = colorsys.hls_to_rgb(h,l,s)
         x_blc = lwidth*i+xblc
         y_blc = yblc
@@ -250,15 +260,15 @@ def draw_legend(xstart):
         print("")
     # draw example lines
     line_start = xblc #+ leg_block_width*2
-    line_y = 350-block_height #yblc + leg_block_height*.5
+    line_y = bb+ leg_block_height*.8
     line_width = 1
     # draw_scale
     ticks = 75
     print("newstring hjc vjc fontsize 5")
-    print(" font Times-Roman x %s y %s : %s"%( line_start,line_y-5,".6"))
+    print(" font Times-Roman x %s y %s : %s"%( line_start,line_y-5,"%.2f"%MAXWEIGHT))
     print("")
     print("newstring hjc vjc fontsize 5")
-    print(" font Times-Roman x %s y %s : %s"%( line_start+ticks*line_width*.5,line_y-5,"0.3"))
+    print(" font Times-Roman x %s y %s : %s"%( line_start+ticks*line_width*.5,line_y-5,"%.2f"%(MAXWEIGHT/2)))
     print("")
     print("newstring hjc vjc fontsize 5")
     print(" font Times-Roman x %s y %s : %s"%( line_start+ticks*line_width,line_y-5,"0.0"))
@@ -275,7 +285,6 @@ def write_text():
     pass
 
 
-MAXEND =0
 from collections import Counter
 def load_data(filename):
     global MAXWEIGHT,MAXEND
@@ -285,13 +294,14 @@ def load_data(filename):
             if i == 0: header = line.strip()
             else:
                 src,dest,weight = line.strip().split(",")
-                if int(src)==0: continue
+                if int(src) == 0: continue
                 G[(int(src),int(dest))]=float(weight)
                 if int(dest)==-1: MAXEND=max(MAXEND,float(weight))
                 else: MAXWEIGHT=max(MAXWEIGHT,float(weight))
     return header,G
 
 def draw_graph(t,G,xstart):
+    global MINGHEIGHT,MAXGHEIGHT
     nodes= set()
     for i,j in G:
         nodes.add(i)
@@ -305,15 +315,17 @@ def draw_graph(t,G,xstart):
 
     offset = 10
     topper = 20
+    ymin= MINGHEIGHT #-offset
+    ymax = 5-offset+row_space*8+block_height+offset+topper # MAXGHEIGHT+offset+topper
     print("newline poly pfill -1 linethickness 1.0 pts")
-    print("    %s %s %s %s %s %s %s %s"%(xstart-offset,5+row_space-offset,xstart+block_space*3+block_width+offset,5+row_space-offset,xstart+block_space*3+block_width+offset,5-offset+row_space*8+block_height+offset+topper,xstart-offset,5-offset+row_space*8+block_height+offset+topper))
+    #print("    %s %s %s %s %s %s %s %s"%(xstart-offset,5+row_space-offset,xstart+block_space*3+block_width+offset,5+row_space-offset,xstart+block_space*3+block_width+offset,5-offset+row_space*8+block_height+offset+topper,xstart-offset,5-offset+row_space*8+block_height+offset+topper))
+    print("    %s %s %s %s %s %s %s %s"%(xstart-offset,ymin-offset,xstart+block_space*3+block_width+offset,ymin-offset,xstart+block_space*3+block_width+offset,ymax,xstart-offset,ymax))
     print("")
     print("newstring hjc vjc fontsize 15")
-    print(" font Times-Roman x %s y %s : %s"%( (xstart+xstart+block_space*3+block_width)/2.,5-offset+row_space*8+block_height+offset+topper-6,t))
+    print(" font Times-Roman x %s y %s : %s"%( (xstart+xstart+block_space*3+block_width)/2.,ymax-6,t))
     print("")
 
 
-MAXWEIGHT=0
 def gen_data():
     G = {}
     global MAXWEIGHT,MAXEND
@@ -334,28 +346,33 @@ def scale(G):
         G[k] = G[k]/MAXWEIGHT
 
 ra = random.random
-def main(f1,f2):
-    if not (f1 is None):
-        t1,G1 = load_data(f1)
-        t2,G2 = load_data(f2)
-        scale(G1)
-        scale(G2)
-    else:
-        t1 = "Test G1"
-        G1 = gen_data()
-        t2 = "Test G2"
-        G2 = gen_data()
+def main(*fs,leg=0):
+    #try: f1,f2 = fs
+    #except: f1,f2=fs[0],None
+    #if not (f1 is None):
+    #    t1,G1 = load_data(f1)
+    #    scale(G1)
+    
     GRAPHSPACE=30
     xstart = 25
     end = xstart + GRAPHSPACE + block_space*8+10
+    end = max(55*len(fs),55*2)
     print("newgraph")
-    print("xaxis min 0 max 110 nodraw")
+    print("xaxis min 0 max %s nodraw"%end) #110
     print("yaxis min 5 max 105 nodraw")
     print("")
-    draw_graph(t1,G1,xstart)
+    #draw_graph(t1,G1,xstart)
+    for i,f in enumerate(fs):
+        t,G = load_data(f)
 
-    xstart = xstart + GRAPHSPACE + block_space*4
-    draw_graph(t2,G2,xstart)
+    for i,f in enumerate(fs):
+        if i == 0:
+            xstart = 25
+        else:
+            xstart = xstart + GRAPHSPACE + block_space*4
+        t,G = load_data(f)
+        scale(G)
+        draw_graph(t,G,xstart)
     #for i in range(1,24):
     #    draw_squares(i,ra(),xstart)
     #arrows = {1:[2,3,4,5],2:[6],3:[6],4:[6],5:[6],6:[8,9,10,11],7:[2,3,4,5],8:[12,7],9:[12,7],10:[12,7],11:[12,7]}
@@ -370,10 +387,10 @@ def main(f1,f2):
     #print("newstring hjc vjc fontsize 15")
     #print(" font Times-Roman x %s y %s : %s"%( (xstart+xstart+block_space*3+block_width)/2.,5-offset+row_space*8+block_height+offset+topper-6,"VISN 9"))
     #print("")
-
-    draw_legend(xstart)
+    xstart=25
+    if leg:
+        draw_legend(xstart)
 
 if __name__=="__main__":
-    if len(sys.argv) >= 3:
-        main(*sys.argv[1:])
-    else: main(None,None)
+    leg = int(sys.argv.pop())
+    main(*sys.argv[1:],leg=leg)

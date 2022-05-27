@@ -6,6 +6,9 @@ __pycache__/
 *svg
 *eps
 *jgr
+*txt
+*sh
+overlay
 
 # C extensions
 *.so

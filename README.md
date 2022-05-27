@@ -7,7 +7,15 @@ We are investigating why there is so much difference in care/outcomes across a l
 ## Problem Description: 
 I am depicting the prescription of antidepressants using a graph. We call this a process or care pathway. For example a person may start an antidepressant at 10 mg. Then ramp up to 20mg in 4months. Then decide to quit. 
 
-## Running the Code
+## Installation and Usage
 Using Python >= 2.7 type `make` from the current working directory.
 
-![Sample Visualization](https://raw.githubusercontent.com/rusheniii/PharmacotherapyPathwaysViz/master/sample_graph.eps)
+The program can also be invoked directly from the command line.
+
+`python pharmaPaths.py <graph1> <graph2>`
+
+`<graph1>` is a weighted directed graph with a title on the first line and delimited by comma. See examples for details
+
+`<graph2>` is a weighted directed graph with a title on the first line and delimited by comma. See examples for details
+
+![Sample Visualization](https://raw.githubusercontent.com/rusheniii/PharmacotherapyPathwaysViz/master/sample_graph.svg)
